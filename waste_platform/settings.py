@@ -18,7 +18,7 @@ model.eval()
 
 SECRET_KEY = config("SECRET_KEY")
 
-DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+DEBUG =config("DEBUG", cast=bool)
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.railway.app']
 
