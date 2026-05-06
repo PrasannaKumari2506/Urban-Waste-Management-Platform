@@ -1,14 +1,26 @@
 import os
 from pathlib import Path
+from pyexpat import model
 from decouple import config
+import torch
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-this-in-production')
+MODEL_PATH = BASE_DIR / "core" / "garbage_classifier.pth"
 
-DEBUG = config('DEBUG', default=True, cast=bool)
+device = torch.device("cpu")
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='*').split(',')
+checkpoint = torch.load(MODEL_PATH, map_location=device)
+
+model.load_state_dict(checkpoint["model_state_dict"])
+
+model.eval()
+
+SECRET_KEY = config("SECRET_KEY")
+
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.railway.app']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -31,6 +43,7 @@ SITE_ID = 1
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -122,5 +135,11 @@ SESSION_COOKIE_SAMESITE = 'Lax'
 
 GOOGLE_MAPS_API_KEY = config('GOOGLE_MAPS_API_KEY', default='')
 
-EMERGENT_AUTH_URL = 'https://auth.emergentagent.com'
-EMERGENT_SESSION_DATA_URL = 'https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data'
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = not DEBUG
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
