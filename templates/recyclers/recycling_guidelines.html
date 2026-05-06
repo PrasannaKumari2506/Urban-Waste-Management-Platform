@@ -1,0 +1,273 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="min-h-screen bg-sand">
+
+    <!-- Sidebar Toggle Button -->
+    <button id="sidebarToggle"
+        class="fixed top-4 left-4 z-[999] bg-forest text-white p-3 rounded-lg shadow-lg transition-all duration-200 lg:hidden"
+        data-testid="sidebar-toggle-btn">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+    </button>
+
+    <!-- Sidebar Overlay -->
+    <div id="sidebarOverlay" class="fixed inset-0 bg-black/40 z-[49] hidden lg:hidden"></div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar"
+        class="fixed top-0 left-0 h-full w-64 bg-white border-r border-charcoal/5 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 z-50 shadow-xl lg:shadow-none flex flex-col overflow-hidden"
+        data-testid="recycler-sidebar">
+
+        <div class="p-6 border-b border-charcoal/5 flex-shrink-0">
+            <div class="flex items-center space-x-2 mb-4">
+                <svg class="w-8 h-8 text-forest" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z"/>
+                </svg>
+                <span class="font-heading font-extrabold text-xl text-forest">EcoWaste</span>
+            </div>
+            <div class="flex items-center space-x-3">
+                {% if user.profile_picture %}
+                <img src="{{ user.profile_picture }}" alt="{{ user.name }}" class="w-10 h-10 rounded-full">
+                {% else %}
+                <div class="w-10 h-10 bg-forest/10 rounded-full flex items-center justify-center">
+                    <span class="text-forest font-bold">{{ user.name.0|upper }}</span>
+                </div>
+                {% endif %}
+                <div>
+                    <p class="font-bold text-sm" data-testid="sidebar-user-name">{{ user.name }}</p>
+                    <p class="text-xs text-charcoal/60">Recycler</p>
+                </div>
+            </div>
+        </div>
+
+        <nav class="p-4 overflow-y-auto flex-1 pb-4">
+            <a href="{% url 'recyclers:dashboard' %}" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-forest/5 text-charcoal/80 hover:text-forest font-medium mb-2 transition-colors" data-testid="sidebar-dashboard-link">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                </svg>
+                <span>Dashboard</span>
+            </a>
+            <a href="{% url 'recyclers:pickup_requests' %}" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-forest/5 text-charcoal/80 hover:text-forest font-medium mb-2 transition-colors" data-testid="sidebar-pickup-requests-link">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                </svg>
+                <span>Pickup Requests</span>
+            </a>
+            <a href="{% url 'recyclers:pickup_history' %}" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-forest/5 text-charcoal/80 hover:text-forest font-medium mb-2 transition-colors" data-testid="sidebar-history-link">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span>History</span>
+            </a>
+            <a href="{% url 'recyclers:recycling_guidelines' %}" class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-forest/10 text-forest font-bold mb-2" data-testid="sidebar-guidelines-link">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                </svg>
+                <span>Guidelines</span>
+            </a>
+            <a href="{% url 'recyclers:edit_profile' %}" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-forest/5 text-charcoal/80 hover:text-forest font-medium mb-2 transition-colors" data-testid="sidebar-edit-profile-link">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                </svg>
+                <span>Profile</span>
+            </a>
+            <a href="{% url 'accounts:logout' %}" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 text-charcoal/80 hover:text-red-600 font-medium transition-colors" data-testid="sidebar-logout-link">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                </svg>
+                <span>Logout</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="lg:ml-64 p-6 lg:p-12 pt-20 lg:pt-12">
+        <div class="max-w-4xl mx-auto">
+            <h1 class="text-4xl sm:text-5xl font-heading font-extrabold text-charcoal mb-2 tracking-tighter" data-testid="guidelines-heading">Recycling Guidelines</h1>
+            <p class="text-charcoal/60 mb-10">Handling instructions and safety tips for each waste category you collect.</p>
+
+            <!-- Waste Categories from DB -->
+            {% if waste_categories %}
+            <div class="mb-12">
+                <h2 class="text-2xl font-heading font-bold text-charcoal mb-6 tracking-tight">Waste Categories You May Handle</h2>
+                <div class="space-y-4">
+                    {% for cat in waste_categories %}
+                    <div class="bg-white rounded-xl border border-charcoal/5 p-6 hover:shadow-sm transition-all duration-200" data-testid="category-card-{{ cat.id }}">
+                        <div class="flex items-start space-x-4">
+                            <div class="w-10 h-10 bg-forest/10 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                                <svg class="w-5 h-5 text-forest" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                </svg>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-heading font-bold text-lg text-charcoal mb-1">{{ cat.name }}</h3>
+                                {% if cat.description %}
+                                <p class="text-sm text-charcoal/70">{{ cat.description }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Static Practical Guidelines -->
+            <div class="mb-12">
+                <h2 class="text-2xl font-heading font-bold text-charcoal mb-6 tracking-tight">General Handling Guidelines</h2>
+                <div class="space-y-4">
+
+                    <div class="bg-white rounded-xl border border-charcoal/5 p-6" data-testid="guideline-safety">
+                        <div class="flex items-start space-x-4">
+                            <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                                <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="font-heading font-bold text-charcoal mb-2">Safety First</h3>
+                                <ul class="text-sm text-charcoal/70 space-y-1 list-disc list-inside">
+                                    <li>Always wear gloves when handling waste</li>
+                                    <li>Use a mask for dusty or chemical waste</li>
+                                    <li>Never mix hazardous waste with general waste</li>
+                                    <li>Wash hands thoroughly after every pickup</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl border border-charcoal/5 p-6" data-testid="guideline-sorting">
+                        <div class="flex items-start space-x-4">
+                            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="font-heading font-bold text-charcoal mb-2">Sorting at Pickup</h3>
+                                <ul class="text-sm text-charcoal/70 space-y-1 list-disc list-inside">
+                                    <li>Separate plastics, paper, metal and glass on-site</li>
+                                    <li>Keep electronics separate from general recyclables</li>
+                                    <li>Organic waste must be in sealed bags</li>
+                                    <li>Confirm waste type matches the request before accepting</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl border border-charcoal/5 p-6" data-testid="guideline-transport">
+                        <div class="flex items-start space-x-4">
+                            <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="font-heading font-bold text-charcoal mb-2">Transport & Vehicle</h3>
+                                <ul class="text-sm text-charcoal/70 space-y-1 list-disc list-inside">
+                                    <li>Ensure waste is properly secured during transport</li>
+                                    <li>Do not overload your vehicle beyond its capacity</li>
+                                    <li>Cover open waste to avoid spillage on roads</li>
+                                    <li>Clean your vehicle after carrying organic or wet waste</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl border border-charcoal/5 p-6" data-testid="guideline-conduct">
+                        <div class="flex items-start space-x-4">
+                            <div class="w-10 h-10 bg-forest/10 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                                <svg class="w-5 h-5 text-forest" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="font-heading font-bold text-charcoal mb-2">Conduct at Household</h3>
+                                <ul class="text-sm text-charcoal/70 space-y-1 list-disc list-inside">
+                                    <li>Be punctual — arrive at the scheduled time</li>
+                                    <li>Be respectful and professional at all times</li>
+                                    <li>Only collect what is listed in the pickup request</li>
+                                    <li>Mark the pickup complete only after waste is collected</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Educational Content from DB -->
+            {% if educational_content %}
+            <div>
+                <h2 class="text-2xl font-heading font-bold text-charcoal mb-6 tracking-tight">Additional Resources</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {% for content in educational_content %}
+                    <div class="bg-white rounded-xl border border-charcoal/5 overflow-hidden hover:shadow-sm transition-all duration-200" data-testid="content-item-{{ content.id }}">
+                        {% if content.thumbnail %}
+                        <img src="{{ content.thumbnail }}" alt="{{ content.title }}" class="w-full h-36 object-cover">
+                        {% else %}
+                        <div class="w-full h-36 bg-forest/5 flex items-center justify-center">
+                            <svg class="w-10 h-10 text-forest/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                            </svg>
+                        </div>
+                        {% endif %}
+                        <div class="p-5">
+                            <span class="text-xs tracking-[0.2em] uppercase font-bold text-forest">{{ content.content_type }}</span>
+                            <h3 class="font-heading font-bold text-charcoal mt-1 mb-1">{{ content.title }}</h3>
+                            {% if content.description %}
+                            <p class="text-sm text-charcoal/70 leading-relaxed">{{ content.description }}</p>
+                            {% endif %}
+                            {% if content.video_url %}
+                            <a href="{{ content.video_url }}" target="_blank" class="inline-block mt-3 text-forest font-bold text-sm hover:text-forest-dark" data-testid="watch-video-{{ content.id }}">Watch Video →</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </main>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const sidebar = document.getElementById('sidebar');
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const overlay = document.getElementById('sidebarOverlay');
+
+    if (!sidebar || !sidebarToggle) return;
+
+    function openSidebar() {
+        sidebar.classList.remove('-translate-x-full');
+        overlay.classList.remove('hidden');
+    }
+
+    function closeSidebar() {
+        sidebar.classList.add('-translate-x-full');
+        overlay.classList.add('hidden');
+    }
+
+    sidebarToggle.addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (sidebar.classList.contains('-translate-x-full')) {
+            openSidebar();
+        } else {
+            closeSidebar();
+        }
+    });
+
+    overlay.addEventListener('click', function () { closeSidebar(); });
+
+    window.addEventListener('resize', function () {
+        if (window.innerWidth >= 1024) {
+            overlay.classList.add('hidden');
+        }
+    });
+});
+</script>
+{% endblock %}

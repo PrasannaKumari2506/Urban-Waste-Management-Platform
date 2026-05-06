@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="min-h-screen bg-sand py-12 px-4">
+    <div class="max-w-6xl mx-auto">
+        <div class="mb-6">
+            <a href="{% url 'households:dashboard' %}" class="text-forest font-bold hover:text-forest-dark" data-testid="back-to-dashboard-link">← Back to Dashboard</a>
+        </div>
+
+        <div class="bg-white rounded-xl border border-charcoal/5 p-8">
+            <h1 class="text-4xl font-heading font-extrabold text-charcoal mb-6 tracking-tighter" data-testid="pickup-history-heading">Pickup History</h1>
+
+            {% if pickups %}
+            <div class="space-y-4">
+                {% for pickup in pickups %}
+                <div class="bg-sand rounded-lg p-6 border border-charcoal/5" data-testid="pickup-history-item-{{ pickup.id }}">
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-3 mb-2">
+                                <h3 class="font-heading font-bold text-lg text-charcoal">{{ pickup.waste_category.name }}</h3>
+                                <span class="px-3 py-1 text-xs font-bold rounded-full 
+                                    {% if pickup.status == 'pending' %}bg-earth/20 text-earth
+                                    {% elif pickup.status == 'accepted' %}bg-blue-100 text-blue-700
+                                    {% elif pickup.status == 'completed' %}bg-green-100 text-green-700
+                                    {% else %}bg-red-100 text-red-700{% endif %}"
+                                    data-testid="pickup-status-{{ pickup.id }}">{{ pickup.status|upper }}</span>
+                            </div>
+                            <p class="text-sm text-charcoal/70 mb-2">{{ pickup.description|default:"No description" }}</p>
+                            <div class="flex items-center space-x-4 text-xs text-charcoal/60">
+                                <span>📅 {{ pickup.pickup_date }}</span>
+                                <span>🕐 {{ pickup.pickup_time }}</span>
+                                {% if pickup.recycler %}
+                                <span>👤 {{ pickup.recycler.name }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% if pickup.status == 'completed' and not pickup.review %}
+                        <a href="{% url 'households:add_review' pickup.id %}" class="px-4 py-2 bg-forest text-white text-sm font-bold rounded-lg hover:bg-forest-dark transition-colors" data-testid="add-review-btn-{{ pickup.id }}">Add Review</a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-12">
+                <svg class="w-16 h-16 text-charcoal/20 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                <p class="text-charcoal/60" data-testid="no-pickups-message">No pickup history yet. Request your first pickup!</p>
+                <a href="{% url 'households:request_pickup' %}" class="inline-block mt-4 px-6 py-2 bg-forest text-white font-bold rounded-lg hover:bg-forest-dark transition-colors" data-testid="first-pickup-btn">Request Pickup</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

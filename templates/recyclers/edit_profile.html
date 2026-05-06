@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="min-h-screen bg-sand py-12 px-4">
+    <div class="max-w-3xl mx-auto">
+        <div class="mb-6">
+            <a href="{% url 'recyclers:dashboard' %}" class="text-forest font-bold hover:text-forest-dark" data-testid="back-to-dashboard-link">← Back to Dashboard</a>
+        </div>
+
+        <div class="bg-white rounded-xl border border-charcoal/5 p-8">
+            <h1 class="text-4xl font-heading font-extrabold text-charcoal mb-6 tracking-tighter" data-testid="edit-profile-heading">Edit Recycler Profile</h1>
+
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs tracking-[0.2em] uppercase font-bold text-forest mb-2">Phone</label>
+                        <input type="tel" name="phone" value="{{ user.phone }}" class="w-full px-4 py-3 bg-white border border-charcoal/10 rounded-lg focus:border-forest focus:ring-1 focus:ring-forest/30 transition-all" placeholder="Your phone number" data-testid="phone-input">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs tracking-[0.2em] uppercase font-bold text-forest mb-2">City</label>
+                        <input type="text" name="city" value="{{ user.city }}" class="w-full px-4 py-3 bg-white border border-charcoal/10 rounded-lg focus:border-forest focus:ring-1 focus:ring-forest/30 transition-all" placeholder="Your city" data-testid="city-input">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs tracking-[0.2em] uppercase font-bold text-forest mb-2">Address</label>
+                    <textarea name="address" rows="2" class="w-full px-4 py-3 bg-white border border-charcoal/10 rounded-lg focus:border-forest focus:ring-1 focus:ring-forest/30 transition-all" placeholder="Your address" data-testid="address-textarea">{{ user.address }}</textarea>
+                </div>
+
+                <div>
+                    <label class="block text-xs tracking-[0.2em] uppercase font-bold text-forest mb-2">Bio</label>
+                    <textarea name="bio" rows="3" class="w-full px-4 py-3 bg-white border border-charcoal/10 rounded-lg focus:border-forest focus:ring-1 focus:ring-forest/30 transition-all" placeholder="Tell households about yourself..." data-testid="bio-textarea">{{ profile.bio }}</textarea>
+                </div>
+
+                <div>
+                    <label class="block text-xs tracking-[0.2em] uppercase font-bold text-forest mb-2">Service Areas</label>
+                    <input type="text" name="service_areas" value="{{ profile.service_areas }}" class="w-full px-4 py-3 bg-white border border-charcoal/10 rounded-lg focus:border-forest focus:ring-1 focus:ring-forest/30 transition-all" placeholder="e.g., Downtown, North District, etc." data-testid="service-areas-input">
+                    <p class="text-xs text-charcoal/60 mt-1">Comma-separated areas you serve</p>
+                </div>
+
+                <div>
+                    <label class="block text-xs tracking-[0.2em] uppercase font-bold text-forest mb-2">Vehicle Type</label>
+                    <input type="text" name="vehicle_type" value="{{ profile.vehicle_type }}" class="w-full px-4 py-3 bg-white border border-charcoal/10 rounded-lg focus:border-forest focus:ring-1 focus:ring-forest/30 transition-all" placeholder="e.g., Truck, Van, etc." data-testid="vehicle-type-input">
+                </div>
+
+                <div class="flex items-center space-x-3">
+                    <input type="checkbox" name="is_available" id="is_available" {% if profile.is_available %}checked{% endif %} class="w-5 h-5 text-forest border-charcoal/10 rounded focus:ring-forest" data-testid="availability-checkbox">
+                    <label for="is_available" class="text-sm font-medium text-charcoal">Currently available for pickups</label>
+                </div>
+
+                <div class="flex space-x-4">
+                    <button type="submit" class="flex-1 bg-forest text-white font-bold py-3 rounded-lg hover:bg-forest-dark transition-all duration-200 transform hover:-translate-y-0.5" data-testid="save-profile-btn">Save Changes</button>
+                    <a href="{% url 'recyclers:dashboard' %}" class="flex-1 text-center bg-charcoal/5 text-charcoal font-bold py-3 rounded-lg hover:bg-charcoal/10 transition-all duration-200" data-testid="cancel-profile-btn">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

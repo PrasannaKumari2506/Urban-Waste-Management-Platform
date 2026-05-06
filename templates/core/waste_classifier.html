@@ -1,0 +1,240 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="min-h-screen bg-sand">
+    <nav class="bg-white border-b border-charcoal/5 sticky top-0 z-40 backdrop-blur-xl bg-white/90">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-2">
+                    <a href="{% url 'home' %}" class="flex items-center space-x-2">
+                        <svg class="w-8 h-8 text-forest" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z"/>
+                        </svg>
+                        <span class="font-heading font-extrabold text-2xl tracking-tight text-forest">EcoWaste</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    {% if user.is_authenticated %}
+                        <a href="{% if user.role == 'household' %}{% url 'households:dashboard' %}{% else %}{% url 'recyclers:dashboard' %}{% endif %}" class="px-6 py-2 text-forest font-bold hover:text-forest-dark transition-colors">Dashboard</a>
+                    {% else %}
+                        <a href="{% url 'accounts:login' %}" class="px-6 py-2 text-forest font-bold hover:text-forest-dark transition-colors">Login</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-4xl mx-auto px-4 py-12">
+        <div class="text-center mb-12">
+            <h1 class="text-4xl sm:text-5xl font-heading font-extrabold text-charcoal mb-4 tracking-tighter" data-testid="classifier-heading">AI Waste Classifier</h1>
+            <p class="text-lg text-charcoal/70 leading-relaxed">Upload an image of your waste and let our AI determine if it's recyclable</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Upload Section -->
+            <div class="bg-white rounded-xl border border-charcoal/5 p-8" data-testid="upload-section">
+                <h2 class="text-2xl font-heading font-bold text-charcoal mb-6">Upload Waste Image</h2>
+                
+                <form method="post" action="{% url 'core:classify_image' %}" enctype="multipart/form-data" id="classifierForm">
+                    {% csrf_token %}
+                    
+                    <div class="mb-6">
+                        <div class="border-2 border-dashed border-charcoal/20 rounded-lg p-8 text-center hover:border-forest transition-colors">
+                            <input type="file" name="waste_image" id="wasteImage" accept="image/*" required class="hidden" data-testid="image-input">
+                            <label for="wasteImage" class="cursor-pointer">
+                                <svg class="w-16 h-16 text-charcoal/30 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                </svg>
+                                <p class="text-charcoal/70 mb-2">Click to upload or drag and drop</p>
+                                <p class="text-xs text-charcoal/50">PNG, JPG, WEBP up to 10MB</p>
+                            </label>
+                        </div>
+                        <div id="imagePreview" class="mt-4 hidden">
+                            <img id="previewImg" src="" alt="Preview" class="w-full rounded-lg shadow-md">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full bg-forest text-white font-bold py-3 rounded-lg hover:bg-forest-dark transition-all duration-200 transform hover:-translate-y-0.5" data-testid="classify-btn">
+                        <span class="flex items-center justify-center space-x-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                            </svg>
+                            <span>Classify Waste</span>
+                        </span>
+                    </button>
+                </form>
+
+                <div class="mt-6 bg-sand rounded-lg p-4">
+                    <p class="text-xs text-charcoal/60"><strong>Tips for best results:</strong></p>
+                    <ul class="text-xs text-charcoal/60 mt-2 space-y-1">
+                        <li>• Use clear, well-lit images</li>
+                        <li>• Focus on a single item</li>
+                        <li>• Avoid cluttered backgrounds</li>
+                        <li>• Ensure the waste item is visible</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div class="bg-white rounded-xl border border-charcoal/5 p-8" data-testid="results-section">
+                <h2 class="text-2xl font-heading font-bold text-charcoal mb-6">Classification Result</h2>
+                
+                {% if result %}
+                <div class="space-y-6">
+                    <!-- Recyclability Status -->
+                    <div class="{% if result.recyclable %}bg-green-50 border-green-200{% else %}bg-red-50 border-red-200{% endif %} border-2 rounded-lg p-6 text-center" data-testid="recyclability-status">
+                        <div class="w-16 h-16 mx-auto mb-4 {% if result.recyclable %}bg-green-100{% else %}bg-red-100{% endif %} rounded-full flex items-center justify-center">
+                            {% if result.recyclable %}
+                            <svg class="w-8 h-8 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                            </svg>
+                            {% else %}
+                            <svg class="w-8 h-8 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                            </svg>
+                            {% endif %}
+                        </div>
+                        <h3 class="text-2xl font-heading font-extrabold {% if result.recyclable %}text-green-700{% else %}text-red-700{% endif %} mb-2">
+                            {% if result.recyclable %}Recyclable ♻️{% else %}Not Recyclable ❌{% endif %}
+                        </h3>
+                        <p class="text-sm text-charcoal/70">Confidence: {{ result.confidence }}%</p>
+                    </div>
+
+                    <!-- Details -->
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between p-4 bg-sand rounded-lg">
+                            <span class="text-xs tracking-[0.2em] uppercase font-bold text-forest">Waste Type</span>
+                            <span class="font-bold text-charcoal" data-testid="waste-type">{{ result.waste_type }}</span>
+                        </div>
+
+                        <div class="flex items-center justify-between p-4 bg-sand rounded-lg">
+                            <span class="text-xs tracking-[0.2em] uppercase font-bold text-forest">Category</span>
+                            <span class="font-bold text-charcoal" data-testid="waste-category">{{ result.category }}</span>
+                        </div>
+
+                        <div class="flex items-center justify-between p-4 bg-sand rounded-lg">
+                            <span class="text-xs tracking-[0.2em] uppercase font-bold text-forest">Degradable</span>
+                            <span class="font-bold text-charcoal">{{ result.degradable|yesno:"Yes,No" }}</span>
+                        </div>
+
+                        <div class="flex items-center justify-between p-4 bg-sand rounded-lg">
+                            <span class="text-xs tracking-[0.2em] uppercase font-bold text-forest">Bin Color</span>
+                            <span class="font-bold text-charcoal">{{ result.bin_color }}</span>
+                        </div>
+
+                        <div class="flex items-center justify-between p-4 bg-sand rounded-lg">
+                            <span class="text-xs tracking-[0.2em] uppercase font-bold text-forest">Degrade Time</span>
+                            <span class="font-bold text-charcoal">{{ result.degrade_time }}</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Recommendation -->
+                    <div class="bg-earth/10 border border-earth/20 rounded-lg p-6">
+                        <h4 class="text-xs tracking-[0.2em] uppercase font-bold text-forest mb-3">Recommendation</h4>
+                        <p class="text-sm text-charcoal/80 leading-relaxed" data-testid="recommendation">{{ result.recommendation }}</p>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    {% if user.is_authenticated and user.role == 'household' %}
+                    <div class="flex space-x-3">
+                        <a href="{% url 'households:request_pickup' %}" class="flex-1 text-center bg-forest text-white font-bold py-3 rounded-lg hover:bg-forest-dark transition-colors">Request Pickup</a>
+                        <button onclick="location.reload()" class="flex-1 bg-charcoal/5 text-charcoal font-bold py-3 rounded-lg hover:bg-charcoal/10 transition-colors">Try Another</button>
+                    </div>
+                    {% else %}
+                    <button onclick="location.reload()" class="w-full bg-forest text-white font-bold py-3 rounded-lg hover:bg-forest-dark transition-colors">Classify Another Image</button>
+                    {% endif %}
+                </div>
+                {% else %}
+                <div class="text-center py-12">
+                    <svg class="w-20 h-20 text-charcoal/20 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    <p class="text-charcoal/60">Upload an image to see classification results</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- How It Works -->
+        <div class="mt-12 bg-white rounded-xl border border-charcoal/5 p-8">
+            <h2 class="text-2xl font-heading font-bold text-charcoal mb-6 text-center">How It Works</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="text-center">
+                    <div class="w-12 h-12 bg-forest/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <span class="text-forest font-bold text-xl">1</span>
+                    </div>
+                    <h3 class="font-bold text-charcoal mb-2">Upload Image</h3>
+                    <p class="text-sm text-charcoal/70">Take or upload a photo of your waste item</p>
+                </div>
+                <div class="text-center">
+                    <div class="w-12 h-12 bg-forest/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <span class="text-forest font-bold text-xl">2</span>
+                    </div>
+                    <h3 class="font-bold text-charcoal mb-2">AI Analysis</h3>
+                    <p class="text-sm text-charcoal/70">Our ML model analyzes the image</p>
+                </div>
+                <div class="text-center">
+                    <div class="w-12 h-12 bg-forest/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <span class="text-forest font-bold text-xl">3</span>
+                    </div>
+                    <h3 class="font-bold text-charcoal mb-2">Get Results</h3>
+                    <p class="text-sm text-charcoal/70">Receive classification and recycling tips</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const dropZone = document.querySelector('.border-dashed');
+const fileInput = document.getElementById('wasteImage');
+
+// Existing click-to-upload (unchanged)
+fileInput.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) showPreview(file);
+});
+
+// Drag and drop events
+dropZone.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    dropZone.classList.add('border-forest', 'bg-forest/5');
+});
+
+dropZone.addEventListener('dragleave', function(e) {
+    dropZone.classList.remove('border-forest', 'bg-forest/5');
+});
+
+dropZone.addEventListener('drop', function(e) {
+    e.preventDefault();
+    dropZone.classList.remove('border-forest', 'bg-forest/5');
+
+    const file = e.dataTransfer.files[0];
+    if (!file) return;
+
+    // Validate type
+    const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!allowed.includes(file.type)) {
+        alert('Please drop a valid image file (JPG, PNG, or WEBP)');
+        return;
+    }
+
+    // Assign dropped file to the input so the form submits it
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    fileInput.files = dt.files;
+
+    showPreview(file);
+});
+
+// Shared preview function
+function showPreview(file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        document.getElementById('previewImg').src = e.target.result;
+        document.getElementById('imagePreview').classList.remove('hidden');
+    }
+    reader.readAsDataURL(file);
+}
+</script>
+{% endblock %}
