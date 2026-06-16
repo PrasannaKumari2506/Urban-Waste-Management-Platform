@@ -77,7 +77,7 @@ The waste classification model was trained using a garbage image dataset from Ka
 - Framework: PyTorch
 - Architecture: MobileNetV2
 - Technique: Transfer Learning
-- Dataset Source: Kaggle Garbage Classification Dataset
+- Dataset Source: [Kaggle Garbage Classification Dataset](https://www.kaggle.com/datasets/asdasdasasdas/garbage-classification)
 
 ## Training Features
 
@@ -125,7 +125,7 @@ project/
 ## 1. Clone Repository
 
 ```bash
-git clone <your-repository-url>
+git clone https://github.com/PrasannaKumari2506/Urban-Waste-Management-Platform
 cd project-folder
 ```
 
